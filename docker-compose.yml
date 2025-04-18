@@ -13,11 +13,21 @@ services:
       - MONGODB_HOST=mongodb
       - MONGODB_PORT=27017
       - MONGODB_DB=user_service
+      - MONGODB_USER=admin
+      - MONGODB_PASSWORD=admin
+      - LOG_LEVEL=info
     depends_on:
       mongodb:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     networks:
       - app-network
+    restart: unless-stopped
 
   product-service:
     build:
@@ -34,11 +44,53 @@ services:
       - DB_USERNAME=postgres
       - DB_PASSWORD=postgres
       - DB_NAME=product_service
+      - LOG_LEVEL=info
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     networks:
       - app-network
+    restart: unless-stopped
+
+  order-service:
+    build:
+      context: ./services/order-service
+      dockerfile: Dockerfile
+    ports:
+      - "3003:3003"
+    environment:
+      - NODE_ENV=development
+      - PORT=3003
+      - MONGODB_HOST=mongodb
+      - MONGODB_PORT=27017
+      - MONGODB_DB=order_service
+      - MONGODB_USER=admin
+      - MONGODB_PASSWORD=admin
+      - USER_SERVICE_URL=http://user-service:3001
+      - PRODUCT_SERVICE_URL=http://product-service:3002
+      - LOG_LEVEL=info
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+      product-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - app-network
+    restart: unless-stopped
 
   mongodb:
     image: mongo:latest
@@ -47,6 +99,7 @@ services:
     environment:
       - MONGO_INITDB_ROOT_USERNAME=admin
       - MONGO_INITDB_ROOT_PASSWORD=admin
+      - MONGO_INITDB_DATABASE=admin
     volumes:
       - mongodb_data:/data/db
     healthcheck:
@@ -54,8 +107,10 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 30s
     networks:
       - app-network
+    restart: unless-stopped
 
   postgres:
     image: postgres:latest
@@ -73,12 +128,16 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 30s
     networks:
       - app-network
+    restart: unless-stopped
 
 volumes:
   mongodb_data:
+    driver: local
   postgres_data:
+    driver: local
 
 networks:
   app-network:

@@ -1,3 +1,47 @@
+# Node.js Framework
+
+A TypeScript-based Node.js framework project.
+
+## Project Structure
+
+```
+nodeFramework/
+├── src/                # Source files
+├── tsconfig.json      # TypeScript configuration
+└── package.json       # Project dependencies and scripts
+```
+
+## Setup
+
+1. Install dependencies:
+```bash
+npm install
+```
+
+2. Create a `src` directory and add your TypeScript files:
+```bash
+mkdir src
+```
+
+3. Compile TypeScript:
+```bash
+npm run build
+```
+
+## Development
+
+- The project uses TypeScript with ES2020 target
+- Source files should be placed in the `src` directory
+- Compiled output will be in the `dist` directory
+
+## Configuration
+
+The project is configured with:
+- TypeScript for type safety
+- ES2020 target for modern JavaScript features
+- Source files in `src/**/*`
+- Excluded test files and node_modules
+
 # Node Enterprise Server
 
 An enterprise-grade Node.js server with support for multiple databases (MongoDB, PostgreSQL, MySQL) and Docker containerization.
